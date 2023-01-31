@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rest_verision_3/alerts/printer_scan_alert/print_scan_alert_body.dart';
-
-import '../../printer/controller/library/iosWinPrint.dart';
-import '../../printer/controller/library/printer_config.dart';
+import '../../printer/printing_package/printer_config.dart';
 import '../../widget/common_widget/common_text/big_text.dart';
 
 

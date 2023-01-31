@@ -10,14 +10,14 @@ import '../../constants/strings/my_strings.dart';
 import '../../error_handler/error_handler.dart';
 import '../../models/kitchen_order_response/kitchen_order.dart';
 import '../../screens/billing_screen/controller/billing_screen_controller.dart';
-import 'library/iosWinPrint.dart';
-import 'library/iosWinPrintMethods.dart';
-import 'library/print_responce.dart';
-import 'library/printer_config.dart';
+import '../printing_package/esc_pos_utils_methods.dart';
+import '../printing_package/flutter_pos_printer_platform.dart';
+import '../printing_package/models/print_responce.dart';
+import '../printing_package/printer_config.dart';
 
 class PrintCTRL {
   final ErrorHandler errHandler = Get.find<ErrorHandler>();
-  IosWinPrint iOSWinPrintInstance = IosWinPrint();
+  FlutterPosPrinterPlatform iOSWinPrintInstance = FlutterPosPrinterPlatform();
 
   printInVoice({
     required List<dynamic> billingItems,
@@ -34,11 +34,11 @@ class PrintCTRL {
   }) async {
     try {
       List<int> bytes = [];
-      final generator = await IosWinPrintMethods.getGenerator();
+      final generator = await EscPosUtilsMethods.getGenerator();
       bytes += generator.setGlobalCodeTable('CP1252');
-      bytes += IosWinPrintMethods.printHeading(generator: generator, heading: Get.find<StartupController>().shopName);
+      bytes += EscPosUtilsMethods.printHeading(generator: generator, heading: Get.find<StartupController>().shopName);
 
-      bytes += IosWinPrintMethods.printRows(
+      bytes += EscPosUtilsMethods.printRows(
         width: [1, 9, 2],
         columns: [
           ['', 'Phone : ${(Get.find<StartupController>().shopNumber).toString()}', '  '],
@@ -49,7 +49,7 @@ class PrintCTRL {
 
       bytes += generator.text('================================', styles: const PosStyles(align: PosAlign.center));
 
-      bytes += IosWinPrintMethods.printRows(
+      bytes += EscPosUtilsMethods.printRows(
         width: [4, 8],
         columns: [
           ['DATE : ', (DateFormat('dd-MM-yyyy  hh:mm aa').format(DateTime.now()))],
@@ -61,7 +61,7 @@ class PrintCTRL {
       bytes += generator.text('--------------------------------', styles: const PosStyles(align: PosAlign.center));
 
       // bill section
-      bytes += IosWinPrintMethods.printRows(
+      bytes += EscPosUtilsMethods.printRows(
         width: [3, 3, 3, 3],
         bold: true,
         columns: [
@@ -70,7 +70,7 @@ class PrintCTRL {
         generator: generator,
       );
 
-      bytes += IosWinPrintMethods.printRows(
+      bytes += EscPosUtilsMethods.printRows(
         width: [3, 3, 3, 3],
         lineCutLength: 8,
         columns: billingItems.map((e) {
@@ -86,7 +86,7 @@ class PrintCTRL {
 
       bytes += generator.text('--------------------------------', styles: const PosStyles(align: PosAlign.center));
 
-      bytes += IosWinPrintMethods.printRows(
+      bytes += EscPosUtilsMethods.printRows(
         width: [6, 6],
         bold: true,
         columns: [
@@ -109,7 +109,7 @@ class PrintCTRL {
           : false) {
         bytes += generator.text('--------------------------------', styles: const PosStyles(align: PosAlign.center));
 
-        bytes += IosWinPrintMethods.printRows(
+        bytes += EscPosUtilsMethods.printRows(
           width: [4, 8],
           columns: [
             ['Name:', '${deliveryAddress['name'] ?? ''}'],
@@ -118,7 +118,7 @@ class PrintCTRL {
           ],
           generator: generator,
         );
-        bytes += IosWinPrintMethods.printRows(
+        bytes += EscPosUtilsMethods.printRows(
           width: [11, 1],
           columns: [
             ['${deliveryAddress['address'] ?? ''}', ' ']
@@ -129,7 +129,7 @@ class PrintCTRL {
 
       bytes += generator.text('--------------------------------', styles: const PosStyles(align: PosAlign.center));
 
-      bytes += IosWinPrintMethods.printHeading(generator: generator, heading: 'Thank You', bold: false);
+      bytes += EscPosUtilsMethods.printHeading(generator: generator, heading: 'Thank You', bold: false);
 
       PrintResponse printerResponse = await iOSWinPrintInstance.printEscPos(bytes, generator, pOSPrinterType: POSPrinterType.billingPrinter);
       if (printerResponse.status) {
@@ -168,12 +168,12 @@ class PrintCTRL {
       }
 
       List<int> bytes = [];
-      final generator = await IosWinPrintMethods.getGenerator();
+      final generator = await EscPosUtilsMethods.getGenerator();
       bytes += generator.setGlobalCodeTable('CP1252');
-      bytes += IosWinPrintMethods.printHeading(generator: generator, heading: 'KOT');
-      bytes += IosWinPrintMethods.printLine(generator: generator);
+      bytes += EscPosUtilsMethods.printHeading(generator: generator, heading: 'KOT');
+      bytes += EscPosUtilsMethods.printLine(generator: generator);
 
-      bytes += IosWinPrintMethods.printRows(
+      bytes += EscPosUtilsMethods.printRows(
         width: [4, 8],
         columns: [
           ['KOT ID : ', ' $kotId'],
@@ -200,7 +200,7 @@ class PrintCTRL {
 
       bytes += generator.text('--------------------------------', styles: const PosStyles(align: PosAlign.center));
 
-      bytes += IosWinPrintMethods.printRows(
+      bytes += EscPosUtilsMethods.printRows(
         width: [6, 6],
         bold: true,
         columns: [
@@ -218,7 +218,7 @@ class PrintCTRL {
         kotItemsForPrint.add(['------------------------------', '---------']);
       }
 
-      bytes += IosWinPrintMethods.printRows(
+      bytes += EscPosUtilsMethods.printRows(
         width: [10, 2],
         lineCutLength: 31,
         columns: kotItemsForPrint,
@@ -249,9 +249,9 @@ class PrintCTRL {
   printQrCode(String qrCode) async {
     try {
       List<int> bytes = [];
-      final generator = await IosWinPrintMethods.getGenerator();
+      final generator = await EscPosUtilsMethods.getGenerator();
       bytes += generator.setGlobalCodeTable('CP1252');
-      bytes += IosWinPrintMethods.printHeading(generator: generator, heading: 'SCAN FOR MENU');
+      bytes += EscPosUtilsMethods.printHeading(generator: generator, heading: 'SCAN FOR MENU');
       bytes += generator.qrcode(qrCode, size: QRSize.Size8);
 
       PrintResponse printerResponse = await iOSWinPrintInstance.printEscPos(bytes, generator, pOSPrinterType: POSPrinterType.billingPrinter);

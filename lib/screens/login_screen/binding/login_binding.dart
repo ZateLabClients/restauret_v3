@@ -4,8 +4,8 @@ import 'package:rest_verision_3/repository/flutter_log_repository.dart';
 
 import '../../../hive_database/controller/hive_hold_bill_controller.dart';
 import '../../../local_storage/local_storage_controller.dart';
-import '../../../printer/controller/library/iosWinPrint.dart';
 import '../../../printer/controller/print_controller.dart';
+import '../../../printer/printing_package/flutter_pos_printer_platform.dart';
 import '../../../repository/startup_repository.dart';
 import '../../../services/service.dart';
 import '../controller/startup_controller.dart';
@@ -31,7 +31,7 @@ class LoginBinding implements Bindings {
     Get.put<StartupRepo>(StartupRepo(), permanent: true);
     Get.put<StartupController>(StartupController(), permanent: true);
   //? printer controller
-    Get.put<IosWinPrint>(IosWinPrint(), permanent: true);
+    Get.put<FlutterPosPrinterPlatform>(FlutterPosPrinterPlatform(), permanent: true);
     Get.put<PrintCTRL>(PrintCTRL(), permanent: true);
 
 

@@ -22,9 +22,6 @@ class BluetoothPrinter {
     this.isBle = false,
   });
 
-  // factory BluetoothPrinter.fromJson(Map<String, dynamic> json) => _$BluetoothPrinterFromJson(json);
-  // Map<String, dynamic> toJson() => _$BluetoothPrinterToJson(this);
-
   Map<String, dynamic> toMap() {
     return {
       "deviceName": deviceName,

@@ -5,15 +5,15 @@ import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:flutter_pos_printer_platform/flutter_pos_printer_platform.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
-import 'package:rest_verision_3/printer/controller/library/print_responce.dart';
-import 'package:rest_verision_3/printer/controller/library/printer_config.dart';
+import 'package:rest_verision_3/printer/printing_package/printer_config.dart';
 import '../../../constants/hive_constants/hive_costants.dart';
 import '../../../error_handler/error_handler.dart';
 import '../../../screens/login_screen/controller/startup_controller.dart';
 import '../../../widget/common_widget/snack_bar.dart';
 import 'models/bluetoothPrinter_model.dart';
+import 'models/print_responce.dart';
 
-class IosWinPrint extends GetxController {
+class FlutterPosPrinterPlatform extends GetxController {
   bool showErr = Get.find<StartupController>().showErr;
   final ErrorHandler errHandler = Get.find<ErrorHandler>();
 
@@ -23,13 +23,23 @@ class IosWinPrint extends GetxController {
 
   FlutterSecureStorage storage = const FlutterSecureStorage();
 
-  @override
-  void onInit() {
-    initializeSecureStorage();
-    super.onInit();
-  }
+  var printerManager = PrinterManager.instance;
+  late PrinterType defaultPrinterType;
 
-  IosWinPrint() {
+  StreamSubscription<PrinterDevice>? _subscriptionPrinterDevice;
+  StreamSubscription<BTStatus>? _subscriptionBtStatus;
+
+  //Not tested with low energy devices
+  var isBle = false;
+
+  //Not tested _reconnect = true
+  var reconnect = false;
+
+  // var _isConnected = false;
+  BTStatus _currentStatus = BTStatus.none;
+  List<int>? pendingTask;
+
+  FlutterPosPrinterPlatform() {
     try {
       if (Platform.isWindows) {
         defaultPrinterType = PrinterType.usb;
@@ -52,23 +62,13 @@ class IosWinPrint extends GetxController {
     }
   }
 
-  var printerManager = PrinterManager.instance;
-  late PrinterType defaultPrinterType;
+  @override
+  void onInit() {
+    initializeSecureStorage();
+    super.onInit();
+  }
 
-  StreamSubscription<PrinterDevice>? _subscriptionPrinterDevice;
-  StreamSubscription<BTStatus>? _subscriptionBtStatus;
-
-  //Not tested with low energy devices
-  var isBle = false;
-
-  //Not tested _reconnect = true
-  var reconnect = false;
-
-  // var _isConnected = false;
-  BTStatus _currentStatus = BTStatus.none;
-  List<int>? pendingTask;
-
-  Future<void> getDevices() async {
+  void scanDevices() async {
     try {
       //Clearing static variable in each scan
       devices = [];
@@ -90,7 +90,6 @@ class IosWinPrint extends GetxController {
 
         update();
       });
-      await Future.delayed(const Duration(milliseconds: 200));
     } catch (e) {
       errHandler.myResponseHandler(error: e.toString(), pageName: 'iosWinPrint', methodName: 'getDevices()');
     } finally {}
@@ -117,22 +116,23 @@ class IosWinPrint extends GetxController {
   }
 
 
-  Future<void> connectBtPrinter({required BluetoothPrinter bluetoothPrinter}) async {
+  Future<void> _connectBtPrinter({required BluetoothPrinter bluetoothPrinter}) async {
     //This fn only used in app start
-    // try {
-    //   await printerManager.connect(
-    //     type: bluetoothPrinter.typePrinter,
-    //     model: BluetoothPrinterInput(
-    //       name: bluetoothPrinter.deviceName,
-    //       address: bluetoothPrinter.address!,
-    //       isBle: bluetoothPrinter.isBle ?? false,
-    //       autoConnect: reconnect,
-    //     ),
-    //   );
-    // } catch (e) {
-    //   errHandler.myResponseHandler(error: e.toString(), pageName: 'iosWinPrint', methodName: 'connectBtPrinter()');
-    //   return;
-    // }
+    try {
+      await printerManager.connect(
+        type: bluetoothPrinter.typePrinter,
+        model: BluetoothPrinterInput(
+          name: bluetoothPrinter.deviceName,
+          address: bluetoothPrinter.address!,
+          isBle: bluetoothPrinter.isBle ?? false,
+          autoConnect: reconnect,
+        ),
+      );
+    } catch (e) {
+      print('Unable to make pre-connection');
+      errHandler.myResponseHandler(error: e.toString(), pageName: 'iosWinPrint', methodName: 'connectBtPrinter()');
+      return;
+    }
   }
 
   Future<PrintResponse> printEscPos(List<int> bytes, Generator generator, {POSPrinterType pOSPrinterType = POSPrinterType.billingPrinter}) async {
@@ -144,17 +144,22 @@ class IosWinPrint extends GetxController {
         printerForPrint = selectedDeviceForBilling;
       }
 
-
       if (printerForPrint == null) {
         //TODO alert user
         return PrintResponse(status: false, message: "No printer selected");
       }
 
-      await _disconnect(printerForPrint);
+      if(Platform.isAndroid){
+        //Disconnection is needed in android to switch between two bluetooth printer.
+        await _disconnect(printerForPrint);
+      }
+      // if(Platform.isIOS){
+      // //  pre-connection to prevent force stop
+      //   await _connectBtPrinter(bluetoothPrinter: printerForPrint);
+      // }
 
       print('Now printing On : ${printerForPrint!.deviceName}');
       print('Printer type is : $pOSPrinterType');
-
 
       bool? isConnectedFlag;
 
@@ -188,12 +193,12 @@ class IosWinPrint extends GetxController {
         default:
       }
 
-      if (isConnectedFlag == false && Platform.isAndroid) {
+      if (Platform.isAndroid && isConnectedFlag == false) {
         return PrintResponse(status: false, message: "Could not connect");
       }
 
       if (Platform.isIOS) {
-        await Future.delayed(const Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 1500));
       }
 
       if (printerForPrint.typePrinter == PrinterType.bluetooth && Platform.isAndroid) {
@@ -214,7 +219,7 @@ class IosWinPrint extends GetxController {
     }
   }
 
-  void closeSubscription() {
+  void _closeSubscription() {
     _subscriptionPrinterDevice?.cancel();
     _subscriptionBtStatus?.cancel();
   }

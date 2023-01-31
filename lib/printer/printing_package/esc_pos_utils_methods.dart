@@ -2,7 +2,7 @@ import 'package:esc_pos_utils/esc_pos_utils.dart';
 
 import 'printer_config.dart';
 
-class IosWinPrintMethods {
+class EscPosUtilsMethods {
   static Future<Generator> getGenerator() async {
     final profile = await CapabilityProfile.load(name: 'XP-N160I');
 

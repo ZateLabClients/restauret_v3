@@ -1,11 +1,12 @@
 import 'package:blue_thermal_printer/blue_thermal_printer.dart';
 import 'package:flutter/services.dart';
-import 'package:rest_verision_3/printer/controller/library/print_responce.dart';
-import 'package:rest_verision_3/printer/controller/library/printer_config.dart';
+
+import '../models/print_responce.dart';
 
 
 class AndroidPrint {
   static final AndroidPrint _singleton = AndroidPrint._internal();
+  static const List allowedBtPrinter = ['BTprinterd130','M581','MPT-II'];
   factory AndroidPrint() {
     return _singleton;
   }
@@ -44,7 +45,7 @@ class AndroidPrint {
       //Select device automatically if no device selected
       if(_selectedDevice==null){
         for (var device in devices) {
-          if (PrinterConfig.allowedBtPrinter.contains(device.name)) {
+          if (allowedBtPrinter.contains(device.name)) {
             print(
               'Device selected automatically: ${device.name} ${device.address} ${device.connected}',
             );

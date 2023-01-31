@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import '../../printer/controller/library/iosWinPrint.dart';
-import '../../printer/controller/library/models/bluetoothPrinter_model.dart';
-import '../../printer/controller/library/printer_config.dart';
 import '../../printer/controller/print_controller.dart';
+import '../../printer/printing_package/flutter_pos_printer_platform.dart';
+import '../../printer/printing_package/models/bluetoothPrinter_model.dart';
+import '../../printer/printing_package/printer_config.dart';
 
 class PrinterScanAlertBody extends StatelessWidget {
   final POSPrinterType pOSPrinterType;
@@ -15,20 +15,20 @@ class PrinterScanAlertBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool horizontal = 1.sh < 1.sw ? true : false;
-    Get.find<IosWinPrint>().getPrinterFromSecureStorage(pOSPrinterType);
-    Get.find<IosWinPrint>().getDevices();
+    Get.find<FlutterPosPrinterPlatform>().getPrinterFromSecureStorage(pOSPrinterType);
+    Get.find<FlutterPosPrinterPlatform>().scanDevices();
 
-    return GetBuilder<IosWinPrint>(builder: (ctrl) {
+    return GetBuilder<FlutterPosPrinterPlatform>(builder: (ctrl) {
 
       final BluetoothPrinter? selectedDevice;
 
       if (pOSPrinterType == POSPrinterType.kotPrinter) {
-        selectedDevice= IosWinPrint.selectedDeviceForKot;
+        selectedDevice= FlutterPosPrinterPlatform.selectedDeviceForKot;
       } else {
-        selectedDevice= IosWinPrint.selectedDeviceForBilling;
+        selectedDevice= FlutterPosPrinterPlatform.selectedDeviceForBilling;
       }
 
-      List<BluetoothPrinter> devices = IosWinPrint.devices;
+      List<BluetoothPrinter> devices = FlutterPosPrinterPlatform.devices;
 
       return SizedBox(
           width: horizontal ? 0.3.sw : 1.sw * 0.6,

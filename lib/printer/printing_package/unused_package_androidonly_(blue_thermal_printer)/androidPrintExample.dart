@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as im;
-import 'package:rest_verision_3/printer/controller/library/print_responce.dart';
 import 'package:screenshot/screenshot.dart';
 
+import '../models/print_responce.dart';
 import 'androidPrint.dart';
 import 'androidPrintWidgets.dart';
 import 'androidPrintenum.dart';

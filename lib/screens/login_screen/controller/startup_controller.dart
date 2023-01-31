@@ -19,9 +19,8 @@ import '../../../constants/strings/my_strings.dart';
 import '../../../error_handler/error_handler.dart';
 import '../../../local_storage/local_storage_controller.dart';
 import '../../../models/my_response.dart';
-import '../../../printer/controller/library/iosWinPrint.dart';
-import '../../../printer/controller/library/models/bluetoothPrinter_model.dart';
-import '../../../printer/controller/library/printer_config.dart';
+import '../../../printer/printing_package/flutter_pos_printer_platform.dart';
+import '../../../printer/printing_package/printer_config.dart';
 import '../../../repository/startup_repository.dart';
 import '../../../services/service.dart';
 import '../../settings_page_screen/controller/settings_controller.dart';
@@ -101,8 +100,8 @@ class StartupController extends GetxController {
 
   _initBtPrinter() async {
     try {
-      Get.find<IosWinPrint>().getPrinterFromSecureStorage(POSPrinterType.billingPrinter);
-      Get.find<IosWinPrint>().getPrinterFromSecureStorage(POSPrinterType.kotPrinter);
+      Get.find<FlutterPosPrinterPlatform>().getPrinterFromSecureStorage(POSPrinterType.billingPrinter);
+      Get.find<FlutterPosPrinterPlatform>().getPrinterFromSecureStorage(POSPrinterType.kotPrinter);
       //Connect Bt printer
       // IosWinPrint iOSWinPrintInstance = IosWinPrint();
       // await iOSWinPrintInstance.getDevices();
